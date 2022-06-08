@@ -1,0 +1,1 @@
+export default  colors = {    white : "#ffffff",    primaryBlue: "#121212"}
