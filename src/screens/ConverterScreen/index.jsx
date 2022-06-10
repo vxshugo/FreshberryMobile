@@ -1,16 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, RefreshControl, View,ScrollView, Text,Image,StyleSheet, Linking,TouchableOpacity } from "react-native";
+import {
+    FlatList,
+    RefreshControl,
+    View,
+    ScrollView,
+    Text,
+    Image,
+    StyleSheet,
+    Linking,
+    TouchableOpacity,
+    Modal
+} from "react-native";
 import {getNews} from "../../service/requests";
-import {green} from "react-native-reanimated/src/reanimated2/Colors";
 import { useNavigation } from "@react-navigation/native";
 import CoinItem from "../../components/CoinItem";
 import ContentLoader, {BulletList, Circle, Rect} from 'react-content-loader/native'
 import MyLoader from "../../components/Loading";
 import NewsItem from "../../components/NewsItem";
+import {AntDesign} from "@expo/vector-icons";
+import RadioForm from "react-native-simple-radio-button";
 
 const ConverterScreen = () => {
     const [news, setNews] = useState([])
     const [loading, setLoading] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
+    const [source, setSource] = useState("us")
+
+    const radio_props = [
+        {label: 'English Source', value: 'us' },
+        {label: 'Русский источник', value: 'ru' }
+    ]
+
+    const insertCurrency = (value) => {
+        setSource(value)
+    }
 
 
     const styles = StyleSheet.create({
@@ -21,6 +44,23 @@ const ConverterScreen = () => {
         },
         greenText: {
             color: '#fff'
+        },
+        container:{
+            paddingHorizontal: 15,
+        },
+        modalToggle: {
+            marginTop: 30,
+            marginBottom: 10,
+            borderWidth: 1,
+            borderColor: '#f2f2f2',
+            padding: 10,
+            borderRadius: 10,
+            alignSelf: 'center',
+        },
+        text: {
+            color: "#000",
+            fontSize: 24,
+            marginBottom: 15
         }
     });
 
@@ -31,7 +71,7 @@ const ConverterScreen = () => {
             return;
         }
         setLoading(true)
-        const fetchedNewsData = await getNews();
+        const fetchedNewsData = await getNews(source);
         setNews(fetchedNewsData.articles)
         setLoading(false)
     }
@@ -41,7 +81,7 @@ const ConverterScreen = () => {
             return;
         }
         setLoading(true)
-        const fetchedNewsData = await getNews();
+        const fetchedNewsData = await getNews(source);
         setNews(fetchedNewsData.articles)
         setLoading(false)
     }
@@ -52,15 +92,45 @@ const ConverterScreen = () => {
     const MyBulletListLoader = () => <BulletList />
     return(
         <View>
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center',marginLeft: 10}}>
-                <Image
-                    style={{width: 50, height: 50}}
-                    source={{
-                        uri: 'https://cdn.discordapp.com/attachments/771761528739069962/958792670787014716/FGWnEOWWQAEi0CS-removebg-preview.png'
-                    }}
-                    resizeMode = 'contain'
-                />
-                <Text style={{ fontFamily: 'DroidSans', color: "white", fontSize: 25, letterSpacing: 1, paddingBottom: 5,marginLeft: 10 }}>News</Text>
+            <Modal visible={modalOpen} animationType="slide">
+                <View style={styles.container}>
+                    <AntDesign
+                        name="close"
+                        size={24}
+                        style={styles.modalToggle}
+                        onPress={() => setModalOpen(false)}
+                    />
+                    <Text
+                        style={styles.text}
+                    >Сменить источник новостей</Text>
+                    <RadioForm
+                        radio_props={radio_props}
+                        initial={source === "us" ? 0 : source === "ru" ? 1 : 0}
+                        formHorizontal={true}
+                        onPress={value => insertCurrency(value)}
+                        labelStyle={{fontSize: 13, color: '#000',marginRight: 20}}
+                    />
+                </View>
+            </Modal>
+            <View style={{display: 'flex', flexDirection: 'row', justifyContent: "space-between",marginLeft: 10}}>
+                <View style={{
+                    alignItems: 'center',flexDirection: "row"
+                }}>
+                    <Image
+                        style={{width: 50, height: 50}}
+                        source={{
+                            uri: 'https://cdn.discordapp.com/attachments/771761528739069962/958792670787014716/FGWnEOWWQAEi0CS-removebg-preview.png'
+                        }}
+                        resizeMode = 'contain'
+                    />
+                    <Text style={{ fontFamily: 'DroidSans', color: "white", fontSize: 25, letterSpacing: 1, paddingBottom: 5,marginLeft: 10 }}>News</Text>
+                </View>
+                <TouchableOpacity
+                    style={{alignItems: 'center', justifyContent: "center", marginRight: 10}}
+                    onPress={() => setModalOpen(true)}
+                >
+                    <AntDesign name="setting" size={24} style={{color: "#fff",}}/>
+                </TouchableOpacity>
             </View>
             {loading ?
                 (
